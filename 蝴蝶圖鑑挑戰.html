@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣蝴蝶 250+ 圖鑑大挑戰 (純淨版)</title>
+    <style>
+        :root {
+            --primary: #388e3c;
+            --secondary: #81c784;
+            --accent: #fbc02d;
+            --bg: #f1f8e9;
+            --text: #37474f;
+            --error: #d32f2f;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(129, 199, 132, 0.2) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 235, 59, 0.2) 0%, transparent 20%);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 650px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- 主選單 --- */
+        #setup-screen h1 { color: var(--primary); margin-bottom: 5px; text-shadow: 1px 1px 0px #c8e6c9; }
+        .subtitle { color: #666; font-size: 0.9em; margin-bottom: 20px; letter-spacing: 1px; }
+        
+        .tip-box {
+            text-align: left;
+            font-size: 0.9em;
+            background: #fff9c4;
+            padding: 15px;
+            border-radius: 12px;
+            color: #f57f17;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent);
+        }
+
+        .menu-btns {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 150px;
+        }
+        .start-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(46, 125, 50, 0.5); }
+        
+        .encyclopedia-btn {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 150px;
+        }
+        .encyclopedia-btn:hover { background: #e8f5e9; }
+
+        /* --- 圖鑑頁面 --- */
+        .search-box { position: relative; margin-bottom: 15px; }
+        .search-input {
+            width: 100%; padding: 12px 40px 12px 15px; border: 2px solid #c5e1a5;
+            border-radius: 25px; font-size: 1em; box-sizing: border-box; outline: none;
+        }
+        .search-input:focus { border-color: var(--primary); }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #888; }
+
+        .encyclopedia-list { text-align: left; height: 60vh; overflow-y: auto; padding-right: 5px; }
+        .family-section { margin-bottom: 25px; }
+        .family-title { color: var(--primary); border-bottom: 2px solid #c8e6c9; padding-bottom: 5px; margin-bottom: 10px; font-size: 1.1em; }
+        .butterfly-tag {
+            display: inline-block; background: #fff; padding: 8px 15px; margin: 4px;
+            border-radius: 20px; font-size: 0.95em; cursor: pointer; transition: 0.2s;
+            border: 1px solid #dcedc8; color: #555; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .butterfly-tag:hover { background: var(--primary); color: white; transform: translateY(-2px); box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+
+        /* --- Modal (彈出視窗) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
+            display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px);
+        }
+        .modal-content {
+            background: white; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px;
+            position: relative; text-align: center; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-close { position: absolute; top: 10px; right: 15px; font-size: 1.5em; cursor: pointer; color: #888; background: none; border: none; }
+        .modal-img-area {
+            width: 100%; min-height: 250px; background: #f5f5f5; border-radius: 10px; margin-bottom: 15px;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .modal-img { max-width: 100%; max-height: 300px; object-fit: contain; }
+        .modal-title { color: var(--primary); margin: 5px 0 10px 0; }
+        .modal-desc { text-align: left; line-height: 1.6; color: #555; font-size: 0.95em; }
+
+        /* --- 遊戲頁面 --- */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .img-area {
+            position: relative; width: 100%; height: 350px; background: #f5f5f5; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 5px; border: 1px solid #eee;
+        }
+        .butterfly-img { max-width: 100%; max-height: 100%; object-fit: contain; display: none; transition: opacity 0.3s; }
+        .img-license { font-size: 0.75em; color: #999; text-align: right; margin-bottom: 15px; font-style: italic; height: 1.2em; }
+        .loading-text {
+            position: absolute; color: #777; font-weight: bold; display: flex; flex-direction: column;
+            align-items: center; gap: 10px; text-align: center; animation: float 2s ease-in-out infinite;
+        }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+        .net-icon { font-size: 2em; }
+
+        /* 工具列 */
+        .tools { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .tool-btn {
+            padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px;
+            cursor: pointer; font-size: 0.9em; display: flex; align-items: center; gap: 6px; transition: 0.2s; color: #555;
+        }
+        .tool-btn:hover { background: #f0f0f0; border-color: #bbb; }
+        
+        /* 選項與按鈕 */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt-btn {
+            padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 12px;
+            font-size: 1.1em; color: var(--text); cursor: pointer; font-weight: bold; transition: all 0.2s;
+        }
+        .opt-btn:hover:not(:disabled) { background: #e8f5e9; border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        .opt-btn:disabled { opacity: 0.7; cursor: not-allowed; border-color: transparent; }
+
+        .skip-btn {
+            width: 100%; margin-top: 20px; padding: 12px; background: #ffe0b2; color: #e65100;
+            border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .skip-btn:hover { background: var(--accent); color: white; }
+
+        .feedback {
+            margin-top: 25px; padding: 20px; background: #e8f5e9; border-radius: 15px; text-align: left;
+            display: none; border-left: 6px solid var(--primary); animation: fadeIn 0.3s ease;
+        }
+        .feedback.wrong { background: #ffebee; border-left-color: var(--error); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .next-btn { width: 100%; margin-top: 15px; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 1.1em; cursor: pointer; font-weight: bold; }
+
+        /* 捲軸美化 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #c5e1a5; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="setup-screen" class="container">
+    <h1>🦋 台灣蝴蝶 250+ 圖鑑挑戰</h1>
+    <div class="subtitle">v5.4 純淨穩定版</div>
+    
+    <div class="tip-box">
+        💡 <strong>遊戲說明：</strong> <br>
+        本遊戲包含 <strong>260</strong> 種台灣蝴蝶。<br>
+        <strong>圖鑑功能：</strong> 內建圖片預覽與搜尋。<br>
+        <strong>無干擾體驗：</strong> 移除音效功能，專注於識別蝴蝶之美。
+    </div>
+
+    <div style="background: #f9fbe7; padding: 20px; border-radius: 15px; margin: 20px 0; border: 1px solid #c5e1a5;">
+        <label style="font-weight:bold; color:#555;">本次挑戰題數</label>
+        <h2 id="q-val-display" style="color:var(--primary); font-size:3em; margin:10px 0;">10</h2>
+        <input type="range" id="q-range" min="5" max="100" value="10" oninput="document.getElementById('q-val-display').innerText = this.value" style="width:100%; accent-color:var(--primary);">
+        <p style="font-size:0.85em; color:#888;">(向右拖動增加題數)</p>
+    </div>
+
+    <div class="menu-btns">
+        <button class="start-btn" onclick="startGame()">▶ 開始挑戰</button>
+        <button class="encyclopedia-btn" onclick="openEncyclopedia()">📖 蝴蝶圖鑑</button>
+    </div>
+</div>
+
+<div id="encyclopedia-screen" class="container" style="display:none;">
+    <div class="header">
+        <button onclick="closeEncyclopedia()" style="border:none; background:none; cursor:pointer; font-size:1.2em; color:#666;">⬅ 回主選單</button>
+        <h2 style="margin:0; color:var(--primary);">📖 蝴蝶分類圖鑑</h2>
+        <div style="width: 24px;"></div>
+    </div>
+    
+    <div class="search-box">
+        <input type="text" id="search-input" class="search-input" placeholder="輸入蝴蝶名稱搜尋..." oninput="filterEncyclopedia()">
+        <span class="search-icon">🔍</span>
+    </div>
+
+    <div id="encyclopedia-content" class="encyclopedia-list">
+        </div>
+</div>
+
+<div id="detail-modal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal(event)">×</button>
+        <div class="modal-img-area">
+            <div id="modal-loader" class="loading-text" style="display:none;">
+                <div class="net-icon">🕸️</div>
+                <span>讀取資料中...</span>
+            </div>
+            <img id="modal-img" class="modal-img" src="" alt="蝴蝶照片" style="display:none;">
+        </div>
+        <h2 id="modal-title" class="modal-title"></h2>
+        <div id="modal-desc" class="modal-desc"></div>
+        <button class="tool-btn" style="width:100%; margin-top:15px; justify-content:center;" onclick="searchGoogleFromModal()">
+            🔍 在 Google 查看更多圖片
+        </button>
+    </div>
+</div>
+
+<div id="game-screen" class="container" style="display:none;">
+    <div class="header">
+        <button onclick="confirmExit()" style="border:none; background:none; cursor:pointer; font-size:1.5em;" title="回到首頁">🏠</button>
+        <div style="font-weight:bold; font-size:1.1em;">第 <span id="cur-q" style="color:var(--primary);">1</span> / <span id="total-q">10</span> 題</div>
+        <div style="background:var(--primary); color:white; padding:5px 15px; border-radius:20px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+            <span id="score">0</span> 分
+        </div>
+    </div>
+
+    <div class="img-area">
+        <div class="loading-text" id="loader">
+            <div class="net-icon">🕸️</div>
+            <span>蝴蝶捕捉中...</span>
+        </div>
+        <img id="quiz-img" class="butterfly-img" alt="蝴蝶照片">
+    </div>
+    <div id="img-license" class="img-license"></div>
+
+    <div class="tools">
+        <button class="tool-btn" onclick="retryWikiImage()" title="重新載入圖片">
+            🔄 刷新圖片
+        </button>
+        <button class="tool-btn" onclick="openGoogleSearch()" title="開啟 Google 圖片搜尋">
+            🔍 Google 搜圖
+        </button>
+    </div>
+
+    <div id="options-area" class="options-grid"></div>
+
+    <button id="skip-btn" class="skip-btn" onclick="skipQuestion()">這題太難了，跳題不計分</button>
+
+    <div id="feedback" class="feedback">
+        <h3 id="result-title" style="margin:0 0 10px 0;"></h3>
+        <p id="result-desc" style="line-height:1.6; font-size:0.95em; color:#444;"></p>
+        <button class="next-btn" onclick="nextQuestion()">下一題 ➜</button>
+    </div>
+</div>
+
+<div id="end-screen" class="container" style="display:none;">
+    <h1 style="color:var(--primary);">🏆 挑戰結束</h1>
+    <p style="color:#666;">您的最終得分</p>
+    <div style="font-size:5em; color:var(--primary); font-weight:bold; margin:10px 0; text-shadow: 2px 2px 0px #c8e6c9;">
+        <span id="final-score">0</span>
+    </div>
+    <p id="end-comment" style="color:#555; font-size:1.2em; margin-bottom:30px;"></p>
+    <button class="start-btn" onclick="resetGame()">🔄 再次挑戰</button>
+</div>
+
+<script>
+    // --- 🦋 蝴蝶資料庫 ---
+    const butterflyData = {
+        "鳳蝶科 Papilionidae": [
+            "大鳳蝶", "寬尾鳳蝶", "玉帶鳳蝶", "紅紋鳳蝶", "青帶鳳蝶", "無尾鳳蝶", "烏鴉鳳蝶", "黑鳳蝶", 
+            "台灣鳳蝶", "大白紋鳳蝶", "曙鳳蝶", "珠光鳳蝶", "黃裳鳳蝶", "台灣寬尾鳳蝶", "斑鳳蝶", "青斑鳳蝶",
+            "木蘭青鳳蝶", "綠斑鳳蝶", "升天鳳蝶", "劍鳳蝶", "黑尾劍鳳蝶", "黃星鳳蝶", "柑橘鳳蝶", 
+            "多姿麝鳳蝶", "長尾麝鳳蝶", "麝鳳蝶", "紅斑麝鳳蝶", "台灣麝鳳蝶", "琉璃紋鳳蝶", "白紋鳳蝶", "無尾白紋鳳蝶"
+        ],
+        "粉蝶科 Pieridae": [
+            "紋白蝶", "台灣紋白蝶", "端紅蝶", "台灣黃蝶", "荷氏黃蝶", "淡黃蝶", "水青粉蝶", "橙端粉蝶",
+            "異色尖粉蝶", "雲紋尖粉蝶", "紅點粉蝶", "遷粉蝶", "星粉蝶", "鋸粉蝶", "高山粉蝶", "斑粉蝶",
+            "白粉蝶", "緣點白粉蝶", "黑點粉蝶", "雲粉蝶", "纖粉蝶", "路易氏紅點粉蝶", "雌白黃蝶", "角翅黃蝶",
+            "端黑黃蝶", "江崎黃蝶", "星黃蝶", "圓翅鉤粉蝶", "湘南六角桃色杯"
+        ],
+        "蛺蝶科 Nymphalidae": [
+            "枯葉蝶", "石牆蝶", "孔雀蛺蝶", "大紅蛺蝶", "小紅蛺蝶", "樺斑蝶", "大白斑蝶", "青斑蝶",
+            "小青斑蝶", "琉球青斑蝶", "姬小紋青斑蝶", "紫斑蝶", "端紫斑蝶", "圓翅紫斑蝶", "斯氏紫斑蝶", "小紫斑蝶",
+            "豹紋蝶", "紅擬豹斑蝶", "黃襟蛺蝶", "眼蛺蝶", "青眼蛺蝶", "美眼蛺蝶", "琉球三線蝶", "台灣三線蝶",
+            "平山三線蝶", "單帶蛺蝶", "雙尾蛺蝶", "台灣雙尾蛺蝶", "白裙弄蝶", "黑脈樺斑蝶", "絹斑蝶",
+            "虎斑蝶", "大紫蛺蝶", "斐豹蛺蝶", "琺蛺蝶", "紅鋸蛺蝶", "白裳貓蛺蝶", "流星蛺蝶",
+            "台灣小紫蛺蝶", "台灣綠蛺蝶", "窄帶翠蛺蝶", "紅斑脈蛺蝶", "小紫蛺蝶", "散紋盛蛺蝶", "花環蝶", 
+            "台灣黃斑蛺蝶", "箭環蝶", "永澤黃斑廕蝶", "大幽眼蝶", "切翅眉眼蝶", "小波紋蛇目蝶", "大波紋蛇目蝶", 
+            "台灣波紋蛇目蝶", "密紋波眼蝶", "江崎波眼蝶", "白帶波眼蝶", "寶島波眼蝶", "台灣黑蔭蝶", "玉山蔭蝶", 
+            "白條斑蔭蝶", "褐翅蔭蝶", "黑樹蔭蝶", "樹蔭蝶", "小蛇目蝶", "姬蛇目蝶", "大黑星弄蝶",
+            "台灣星三線蝶", "金三線蝶", "蓬萊環蛺蝶", "豆環蛺蝶", "小環蛺蝶", "斷線環蛺蝶", "細帶環蛺蝶",
+            "赤蛺蝶", "姬紅蛺蝶", "黃鉤蛺蝶", "突尾鉤蛺蝶", "白蛺蝶", "電蛺蝶", "海豹蛺蝶"
+        ],
+        "小灰蝶科 Lycaenidae": [
+            "沖繩小灰蝶", "台灣琉璃小灰蝶", "台灣玄灰蝶", "台灣黑燕小灰蝶", "恆春小灰蝶", "燕藍灰蝶",
+            "波紋小灰蝶", "豆波灰蝶", "蘇鐵小灰蝶", "墾丁小灰蝶", "紫日灰蝶", "紅邊黃小灰蝶",
+            "白波紋小灰蝶", "琉璃波紋小灰蝶", "淡青雅波灰蝶", "白水的小灰蝶", "姬三尾小灰蝶",
+            "雙尾琉璃小灰蝶", "玳灰蝶", "綠底小灰蝶", "台灣綠底小灰蝶", "霧社綠小灰蝶", "夸父綠小灰蝶",
+            "拉拉山綠小灰蝶", "台灣烏小灰蝶", "蓬萊烏小灰蝶", "白底烏小灰蝶", "棋石小灰蝶",
+            "台灣單帶蛺蝶", "埔里琉璃小灰蝶", "杉谷琉璃小灰蝶", "細邊琉璃小灰蝶", "達邦琉璃小灰蝶",
+            "日本紫灰蝶", "燕尾紫灰蝶", "凹翅紫灰蝶", "台灣銀灰蝶", "銀灰蝶", "蓬萊銀灰蝶",
+            "台灣灑灰蝶", "三尾小灰蝶", "恆春姬小灰蝶", "南方姬小灰蝶", "角紋小灰蝶", "黑星小灰蝶"
+        ],
+        "弄蝶科 Hesperiidae": [
+            "竹紅弄蝶", "寬邊橙斑弄蝶", "黑星弄蝶", "台灣瑟弄蝶", "小黑星弄蝶",
+            "姬單帶弄蝶", "台灣單帶弄蝶", "玉帶弄蝶", "白弄蝶", "綠弄蝶", "大綠弄蝶", "褐弄蝶",
+            "台灣黃斑弄蝶", "香蕉弄蝶", "沖繩絨毛弄蝶", "台灣絨毛弄蝶", "尖翅弄蝶", "大白裙弄蝶",
+            "埔里紅弄蝶", "熱帶白裙弄蝶", "無尾白裙弄蝶", "黑弄蝶", "白紋黑弄蝶", "台灣窗弄蝶",
+            "鸞褐弄蝶", "黃紋孔弄蝶", "巨弄蝶", "長牙弄蝶", "台灣流星弄蝶"
+        ]
+    };
+
+    let fullButterflyList = [];
+    Object.values(butterflyData).forEach(list => {
+        fullButterflyList = fullButterflyList.concat(list);
+    });
+    const uniqueButterflies = [...new Set(fullButterflyList)];
+
+    document.getElementById('q-range').max = uniqueButterflies.length;
+
+    // --- 圖鑑系統 ---
+    function openEncyclopedia() {
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('encyclopedia-screen').style.display = 'block';
+        if (document.getElementById('encyclopedia-content').innerHTML.trim() === "") {
+            renderEncyclopedia();
+        }
+    }
+
+    function closeEncyclopedia() {
+        document.getElementById('encyclopedia-screen').style.display = 'none';
+        document.getElementById('setup-screen').style.display = 'block';
+    }
+
+    function renderEncyclopedia() {
+        const content = document.getElementById('encyclopedia-content');
+        content.innerHTML = "";
+
+        for (const [family, list] of Object.entries(butterflyData)) {
+            const section = document.createElement('div');
+            section.className = 'family-section';
+            
+            const title = document.createElement('h3');
+            title.className = 'family-title';
+            title.innerText = family;
+            section.appendChild(title);
+
+            list.forEach(name => {
+                const tag = document.createElement('span');
+                tag.className = 'butterfly-tag';
+                tag.innerText = name;
+                tag.onclick = () => showButterflyDetail(name);
+                section.appendChild(tag);
+            });
+            content.appendChild(section);
+        }
+    }
+
+    function filterEncyclopedia() {
+        const query = document.getElementById('search-input').value.toLowerCase();
+        const sections = document.querySelectorAll('.family-section');
+
+        sections.forEach(section => {
+            const tags = section.querySelectorAll('.butterfly-tag');
+            let hasVisibleTag = false;
+            tags.forEach(tag => {
+                if (tag.innerText.toLowerCase().includes(query)) {
+                    tag.style.display = 'inline-block';
+                    hasVisibleTag = true;
+                } else {
+                    tag.style.display = 'none';
+                }
+            });
+            section.style.display = hasVisibleTag ? 'block' : 'none';
+        });
+    }
+
+    // --- Modal 邏輯 ---
+    async function showButterflyDetail(name) {
+        const modal = document.getElementById('detail-modal');
+        const loader = document.getElementById('modal-loader');
+        const img = document.getElementById('modal-img');
+        const title = document.getElementById('modal-title');
+        const desc = document.getElementById('modal-desc');
+
+        modal.style.display = 'flex';
+        title.innerText = name;
+        desc.innerText = "";
+        img.style.display = 'none';
+        loader.style.display = 'flex';
+
+        const data = await getWikiData(name);
+        loader.style.display = 'none';
+        
+        if (data && data.img) {
+            img.src = data.img;
+            img.style.display = 'block';
+        } else {
+            loader.style.display = 'flex';
+            loader.innerHTML = `<span>暫無圖片</span>`;
+        }
+        desc.innerHTML = (data && data.extract) ? data.extract : "暫無詳細介紹。";
+    }
+
+    function closeModal(e) {
+        if (e.target === document.getElementById('detail-modal') || e.target.classList.contains('modal-close')) {
+            document.getElementById('detail-modal').style.display = 'none';
+        }
+    }
+
+    function searchGoogleFromModal() {
+        const name = document.getElementById('modal-title').innerText;
+        window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(name + " 蝴蝶")}`, '_blank');
+    }
+
+    // --- 通用 Wiki API ---
+    async function getWikiData(keyword) {
+        const apiUrl = `https://zh.wikipedia.org/w/api.php?action=query&titles=${keyword}&prop=pageimages|extracts&format=json&pithumbsize=600&exintro=1&explaintext=1&origin=*&redirects=1`;
+        try {
+            const res = await fetch(apiUrl);
+            const data = await res.json();
+            const pages = data.query.pages;
+            const pageId = Object.keys(pages)[0];
+            if (pageId === "-1") return null;
+
+            const page = pages[pageId];
+            return {
+                img: page.thumbnail ? page.thumbnail.source : null,
+                extract: page.extract
+            };
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    }
+
+    // --- 遊戲邏輯 ---
+    let gameState = {
+        questions: [],
+        index: 0,
+        score: 0,
+        currentName: "",
+        currentWikiData: null,
+        imgSrc: "",
+        retryCount: 0
+    };
+
+    function confirmExit() {
+        if(confirm("確定要回到首頁嗎？目前的進度將會遺失。")) {
+            resetGame();
+        }
+    }
+
+    function resetGame() {
+        document.getElementById('setup-screen').style.display = 'block';
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'none';
+        gameState.score = 0;
+    }
+
+    function startGame() {
+        const count = parseInt(document.getElementById('q-range').value);
+        const shuffled = [...uniqueButterflies].sort(() => 0.5 - Math.random());
+        gameState.questions = shuffled.slice(0, count);
+        gameState.index = 0;
+        gameState.score = 0;
+        gameState.retryCount = 0;
+
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        document.getElementById('total-q').innerText = count;
+        
+        loadQuestion();
+    }
+
+    async function loadQuestion() {
+        if (gameState.index >= gameState.questions.length) {
+            endGame();
+            return;
+        }
+
+        const qName = gameState.questions[gameState.index];
+        gameState.currentName = qName;
+        gameState.currentWikiData = null;
+        gameState.imgSrc = "";
+
+        // UI Reset
+        document.getElementById('cur-q').innerText = gameState.index + 1;
+        document.getElementById('score').innerText = gameState.score;
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('skip-btn').style.display = 'none';
+        document.getElementById('options-area').innerHTML = '';
+        document.getElementById('img-license').innerText = '';
+        
+        const imgEl = document.getElementById('quiz-img');
+        const loader = document.getElementById('loader');
+        
+        imgEl.style.display = 'none';
+        imgEl.src = ''; 
+        loader.style.display = 'flex';
+        loader.innerHTML = '<div class="net-icon">🕸️</div><span>蝴蝶捕捉中...</span>';
+        
+        const data = await getWikiData(qName);
+
+        if (!data || !data.img) {
+            gameState.retryCount++;
+            if (gameState.retryCount > 5) {
+                alert("網路狀況不佳，無法獲取圖片。");
+                resetGame();
+                return;
+            }
+            let newButterfly = null;
+            for (let i = 0; i < 50; i++) {
+                let candidate = uniqueButterflies[Math.floor(Math.random() * uniqueButterflies.length)];
+                if (!gameState.questions.includes(candidate)) {
+                    newButterfly = candidate;
+                    break;
+                }
+            }
+            if (newButterfly) {
+                gameState.questions[gameState.index] = newButterfly;
+                loadQuestion(); 
+            } else {
+                endGame();
+            }
+            return; 
+        }
+
+        gameState.retryCount = 0;
+        gameState.currentWikiData = data;
+        gameState.imgSrc = data.img;
+
+        document.getElementById('img-license').innerText = "圖片來源：維基百科 (Wikipedia)";
+        showImage(gameState.imgSrc);
+        
+        let options = [qName];
+        while (options.length < 4) {
+            const randomName = uniqueButterflies[Math.floor(Math.random() * uniqueButterflies.length)];
+            if (!options.includes(randomName)) {
+                options.push(randomName);
+            }
+        }
+        options.sort(() => 0.5 - Math.random());
+        renderOptions(options);
+        document.getElementById('skip-btn').style.display = 'block';
+    }
+
+    function retryWikiImage() {
+        const imgEl = document.getElementById('quiz-img');
+        const loader = document.getElementById('loader');
+        imgEl.style.display = 'none';
+        loader.style.display = 'flex';
+        loader.innerHTML = '<div class="net-icon">🕸️</div><span>重新捕捉中...</span>';
+        setTimeout(() => {
+            imgEl.src = gameState.imgSrc + `?t=${new Date().getTime()}`; 
+            imgEl.onload = () => { loader.style.display = 'none'; imgEl.style.display = 'block'; };
+        }, 500);
+    }
+
+    function showImage(src) {
+        const imgEl = document.getElementById('quiz-img');
+        const loader = document.getElementById('loader');
+        imgEl.src = src;
+        imgEl.onload = () => { loader.style.display = 'none'; imgEl.style.display = 'block'; imgEl.style.opacity = '1'; };
+    }
+
+    function openGoogleSearch() {
+        const name = gameState.currentName || ""; 
+        window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(name + " 蝴蝶")}`, '_blank');
+    }
+
+    function renderOptions(options) {
+        const area = document.getElementById('options-area');
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(btn, opt);
+            area.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(btn, ans) {
+        const correct = gameState.currentName;
+        const feedback = document.getElementById('feedback');
+        
+        document.querySelectorAll('.opt-btn').forEach(b => {
+            b.disabled = true;
+            if (b.innerText === correct) {
+                b.style.backgroundColor = '#2e7d32'; b.style.borderColor = '#2e7d32'; b.style.color = 'white';
+            } else if (b === btn && ans !== correct) {
+                b.style.backgroundColor = '#ffebee'; b.style.borderColor = '#d32f2f'; b.style.color = '#d32f2f';
+            }
+        });
+        document.getElementById('skip-btn').style.display = 'none';
+        feedback.style.display = 'block';
+        
+        if (ans === correct) {
+            gameState.score += 10;
+            document.getElementById('score').innerText = gameState.score;
+            feedback.className = 'feedback';
+            document.getElementById('result-title').innerText = "🎉 捕捉成功！";
+        } else {
+            feedback.className = 'feedback wrong';
+            document.getElementById('result-title').innerText = "😅 蝴蝶飛走了...";
+        }
+        let intro = gameState.currentWikiData && gameState.currentWikiData.extract ? gameState.currentWikiData.extract.substring(0, 120) + "..." : "維基百科暫無詳細說明。";
+        document.getElementById('result-desc').innerHTML = `<strong>【${correct}】</strong><br>${intro}`;
+    }
+
+    function skipQuestion() {
+        const correct = gameState.currentName;
+        document.querySelectorAll('.opt-btn').forEach(b => {
+            b.disabled = true;
+            if (b.innerText === correct) {
+                b.style.backgroundColor = '#2e7d32'; b.style.color = 'white';
+            }
+        });
+        document.getElementById('skip-btn').style.display = 'none';
+        const feedback = document.getElementById('feedback');
+        feedback.style.display = 'block';
+        feedback.className = 'feedback';
+        document.getElementById('result-title').innerText = "跳題 (不計分)";
+        let intro = gameState.currentWikiData && gameState.currentWikiData.extract ? gameState.currentWikiData.extract.substring(0, 120) + "..." : "維基百科暫無詳細說明。";
+        document.getElementById('result-desc').innerHTML = `<strong>【${correct}】</strong><br>${intro}`;
+    }
+
+    function nextQuestion() { gameState.index++; loadQuestion(); }
+
+    function endGame() {
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'block';
+        document.getElementById('final-score').innerText = gameState.score;
+        const score = gameState.score;
+        const totalScore = gameState.questions.length * 10;
+        const msg = document.getElementById('end-comment');
+        if (score >= totalScore * 0.9) msg.innerText = "🦋 太神了！你是蝴蝶博士吧！";
+        else if (score >= totalScore * 0.6) msg.innerText = "✨ 不錯喔！對蝴蝶很有研究！";
+        else msg.innerText = "💪 再接再厲！大自然在等你探索！";
+    }
+</script>
+</body>
+</html>
